@@ -21,7 +21,9 @@
 - [x] **Configuration files created**
 
 ### 🔄 In Progress
-- [ ] **Access and verify ERPNext instance**
+- [x] **Access and verify ERPNext instance**
+- [ ] **Complete setup wizard**
+- [ ] **Restore production data from Contabo backups**
 - [ ] Custom app creation
 - [ ] Initial ERPNext configuration
 
@@ -37,9 +39,10 @@
 - [x] Project structure created
 - [x] **Easy install script setup**
 - [x] **Development environment deployment**
-- [x] **Local domain configuration (localhost:8080)**
+- [x] **Local domain configuration (https://adnoor-dev.local)**
 - [x] **Basic site setup and testing**
-- [ ] **Access and verify ERPNext instance**
+- [x] **Access and verify ERPNext instance**
+- [x] **Login working (Administrator / admin123)**
 
 ### 1.2 Custom App Development
 - [ ] Create adnoor_custom app
@@ -48,7 +51,9 @@
 - [ ] Version control integration
 
 ### 1.3 Core ERPNext Configuration
-- [ ] Install ERPNext v15.79.0
+- [x] Install ERPNext v15.79.0
+- [ ] **Complete setup wizard (Company: AdNoor, Abbreviation: ANC)**
+- [ ] **Restore production data from Contabo backups**
 - [ ] Configure basic settings
 - [ ] Set up user roles and permissions
 - [ ] Configure company information
@@ -263,20 +268,51 @@ bench --site sitename restore /path/to/backup
 - [ ] Backup strategy implemented
 - [ ] Go-live completed successfully
 
+## Production Data Restoration
+
+### Backup Transfer from Contabo
+```bash
+# Transfer backups from Contabo server to local machine
+scp user@your-contabo-server:/path/to/backups/*.tar.gz /Users/adeemadilkhatri/adnoor-erp/backups/
+```
+
+### Restore Process
+```bash
+# Navigate to frappe_docker directory
+cd /Users/adeemadilkhatri/adnoor-erp/frappe_docker
+
+# Restore the backup
+docker compose exec backend bench --site adnoor-dev.local restore /path/to/backup.tar.gz
+
+# Migrate to apply any necessary patches
+docker compose exec backend bench --site adnoor-dev.local migrate
+```
+
+### Verification Steps
+1. **Company Information**: Verify company name, abbreviation, and settings
+2. **Chart of Accounts**: Check account structure matches production
+3. **Users and Roles**: Verify user accounts and permissions
+4. **Items and Pricing**: Check item master and pricing data
+5. **Customer/Supplier Data**: Verify master data
+6. **Financial Settings**: Check currency, fiscal year, etc.
+
 ## Access Information
 
 ### Development Environment
-- **URL**: http://localhost:8080 or http://adnoor-dev.local:8080
+- **URL**: https://adnoor-dev.local
 - **Admin Username**: Administrator
-- **Admin Password**: admin123
+- **Admin Password**: admin123 (reset from original)
 - **MariaDB Root Password**: 880aa9112
 - **Passwords File**: /Users/adeemadilkhatri/frappe-passwords.txt
+- **Note**: Add `127.0.0.1 adnoor-dev.local` to `/etc/hosts` for proper access
 
 ## Next Steps
 
 1. **Immediate (This Week)**
    - ✅ Complete development environment setup
-   - [ ] **Access and verify ERPNext instance**
+   - ✅ **Access and verify ERPNext instance**
+   - [ ] **Complete setup wizard**
+   - [ ] **Restore production data from Contabo backups**
    - [ ] Create adnoor_custom app
    - [ ] Test basic ERPNext functionality
 

@@ -9,7 +9,7 @@ This project implements a complete ERPNext solution for AdNoor business, mirrori
 ## Environments
 
 ### Development (Laptop)
-- **URL**: http://localhost:8080 or http://adnoor-dev.local:8080
+- **URL**: https://adnoor-dev.local
 - **Setup**: `python3 easy-install.py deploy --email=admin@adnoorerp.com --sitename=adnoor-dev.local --app=erpnext`
 - **Purpose**: Local development and testing
 - **Status**: ✅ **INSTALLED AND RUNNING**
@@ -29,10 +29,11 @@ This project implements a complete ERPNext solution for AdNoor business, mirrori
 # Or run directly:
 python3 easy-install.py deploy --email=admin@adnoorerp.com --sitename=adnoor-dev.local --app=erpnext
 
-# Access at http://localhost:8080 or http://adnoor-dev.local:8080
-# Admin credentials: Administrator / deea4eb752c5
+# Access at https://adnoor-dev.local
+# Admin credentials: Administrator / admin123
 # MariaDB root password: 880aa9112
 # Passwords saved in: /Users/adeemadilkhatri/frappe-passwords.txt
+# Note: Add "127.0.0.1 adnoor-dev.local" to /etc/hosts for proper access
 ```
 
 ### Production Deployment
@@ -77,7 +78,9 @@ adnoor-erp/
 - **✅ Easy Install Script Setup Complete**
 - **✅ Project Structure Organized**
 - **✅ Documentation and Scripts Ready**
-- **🔄 Next**: Access and verify ERPNext instance, create custom app
+- **✅ ERPNext Instance Accessible**: https://adnoor-dev.local
+- **✅ Login Working**: Administrator / admin123
+- **🔄 Next**: Complete setup wizard, restore production data, create custom app
 
 ## Key Features
 
@@ -103,6 +106,18 @@ adnoor-erp/
 - Twilio integration
 - Mobile app
 - System expansion
+
+## Troubleshooting
+
+### Access Issues
+- **SSL Warning**: Accept the self-signed certificate warning (normal for development)
+- **localhost:8080 not working**: Use https://adnoor-dev.local instead
+- **Host not found**: Add `127.0.0.1 adnoor-dev.local` to `/etc/hosts`
+
+### Login Issues
+- **Username**: Administrator (case-sensitive)
+- **Password**: admin123 (reset from original password)
+- **Reset password**: `docker exec frappe-backend-1 bench --site adnoor-dev.local set-admin-password newpassword`
 
 ## Support
 
