@@ -1,0 +1,3 @@
+2025-09-21 17:23:11,870 - INFO - Running Production Setup
+2025-09-21 17:26:01,125 - INFO - Docker Compose file generated at ~/frappe-compose.yml
+2025-09-21 17:27:01,221 - INFO - New site creation completed
