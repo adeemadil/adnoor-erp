@@ -1,3 +1,9 @@
-2025-09-21 17:23:11,870 - INFO - Running Production Setup
-2025-09-21 17:26:01,125 - INFO - Docker Compose file generated at ~/frappe-compose.yml
-2025-09-21 17:27:01,221 - INFO - New site creation completed
+2025-09-21 23:19:52,063 - INFO - Running Production Setup
+2025-09-21 23:20:28,576 - INFO - Docker Compose file generated at ~/frappe-compose.yml
+2025-09-21 23:20:30,222 - ERROR - Bench site creation failed for adnoor-dev.local
+Traceback (most recent call last):
+  File "/Users/adeemadilkhatri/adnoor-erp/easy-install.py", line 474, in create_site
+    subprocess.run(
+  File "/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/subprocess.py", line 526, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['docker', 'compose', '-p', 'frappe', 'exec', 'backend', 'bench', 'new-site', '--no-mariadb-socket', '--db-root-password=880aa9112', '--admin-password=deea4eb752c5', '--install-app', 'erpnext', 'adnoor-dev.local']' returned non-zero exit status 1.

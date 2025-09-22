@@ -1,0 +1,357 @@
+# =============================================================================
+# COMPREHENSIVE GITIGNORE FOR ADNOOR ERP PROJECT
+# =============================================================================
+# This file prevents sensitive and confidential data from being committed to git
+
+# =============================================================================
+# CRITICAL SECURITY - BACKUPS AND DATABASE FILES
+# =============================================================================
+# Backup directories and files (CRITICAL - contains sensitive data)
+backups/
+backup/
+backups/*
+*.sql
+*.sql.gz
+*.sql.bz2
+*.tar
+*.tar.gz
+*.tar.bz2
+*.zip
+*.dump
+*.backup
+*.bak
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# =============================================================================
+# ENVIRONMENT VARIABLES AND CONFIGURATION
+# =============================================================================
+# Environment files (CRITICAL - contains credentials)
+.env
+.env.*
+!.env.example
+!*.env.example
+development.env
+production.env
+staging.env
+config.env
+local.env
+.env.local
+.env.development
+.env.production
+.env.staging
+
+# Configuration files with sensitive data
+config/secrets.json
+config/credentials.json
+config/private.json
+config/local.json
+config/production.json
+config/staging.json
+
+# =============================================================================
+# FRAPPE/ERP SPECIFIC
+# =============================================================================
+# Frappe sites and data
+sites/
+logs/
+error_logs/
+error_logs/*
+*.log
+*.log.*
+
+# Frappe bench data
+frappe-bench/
+bench/
+sites/
+archived_sites/
+old_sites/
+
+# Frappe cache and temporary files
+.cache/
+cache/
+temp/
+tmp/
+
+# =============================================================================
+# DEVELOPMENT AND BUILD ARTIFACTS
+# =============================================================================
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+.venv/
+
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.pnpm-debug.log*
+.npm
+.yarn/cache
+.yarn/unplugged
+.yarn/build-state.yml
+.yarn/install-state.gz
+.pnp.*
+
+# =============================================================================
+# IDE AND EDITOR FILES
+# =============================================================================
+# VSCode
+.vscode/
+!.vscode/extensions.json
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+*.code-workspace
+
+# PyCharm
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Vim
+*.swp
+*.swo
+*~
+
+# Emacs
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+auto-save-list
+tramp
+.\#*
+
+# =============================================================================
+# OPERATING SYSTEM FILES
+# =============================================================================
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon?
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+*.tmp
+*.temp
+Desktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+*.lnk
+
+# Linux
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
+
+# =============================================================================
+# DOCKER AND CONTAINERS
+# =============================================================================
+# Docker
+.dockerignore
+docker-compose.override.yml
+docker-compose.local.yml
+docker-compose.prod.yml
+
+# Container volumes and data
+volumes/
+data/
+mysql_data/
+postgres_data/
+redis_data/
+
+# =============================================================================
+# SSL/TLS CERTIFICATES
+# =============================================================================
+# SSL certificates and keys
+*.pem
+*.key
+*.crt
+*.cert
+*.p12
+*.pfx
+ssl/
+certs/
+certificates/
+
+# =============================================================================
+# LOGS AND MONITORING
+# =============================================================================
+# Log files
+logs/
+log/
+*.log
+*.log.*
+error.log
+access.log
+nginx.log
+apache.log
+php.log
+mysql.log
+redis.log
+
+# Monitoring and profiling
+*.prof
+*.trace
+coverage/
+.coverage
+htmlcov/
+.pytest_cache/
+
+# =============================================================================
+# TEMPORARY AND CACHE FILES
+# =============================================================================
+# Temporary files
+tmp/
+temp/
+.tmp/
+.temp/
+
+# Cache directories
+.cache/
+cache/
+.parcel-cache/
+
+# =============================================================================
+# SECRETS AND KEYS
+# =============================================================================
+# API keys and secrets
+secrets/
+secrets.json
+api_keys.json
+private_keys/
+*.private
+*.secret
+
+# SSH keys
+id_rsa
+id_rsa.pub
+id_ed25519
+id_ed25519.pub
+known_hosts
+
+# =============================================================================
+# DEPLOYMENT AND CI/CD
+# =============================================================================
+# Deployment scripts with sensitive data
+deploy-*.sh
+!deploy-example.sh
+deploy.sh
+deployment-config.json
+
+# CI/CD secrets
+.github/secrets/
+.gitlab-ci-secrets/
+.circleci/secrets/
+
+# =============================================================================
+# DOCUMENTATION WITH SENSITIVE INFO
+# =============================================================================
+# Documentation that might contain sensitive info
+docs/credentials.md
+docs/secrets.md
+docs/production-setup.md
+docs/deployment-guide.md
+
+# =============================================================================
+# FRAPPE SPECIFIC ADDITIONS
+# =============================================================================
+# Frappe specific files
+frappe-bench/
+frappe/
+erpnext/
+apps/
+sites/
+archived_sites/
+logs/
+config.json
+common_site_config.json
+site_config.json
+
+# Frappe installation logs
+easy-install.log
+install.log
+
+# =============================================================================
+# PROJECT SPECIFIC EXCLUSIONS
+# =============================================================================
+# Keep important configuration examples but ignore actual configs
+!config/apps-example.json
+!config/*.example.*
+!*.example.*
+
+# Keep documentation but exclude sensitive docs
+!docs/
+!README.md
+!*.md
+!docs/IMPLEMENTATION_PLAN.md
+
+# Keep scripts but exclude deployment scripts with secrets
+!scripts/
+scripts/deploy-production.sh
+
+# Keep frappe_docker but exclude sensitive overrides
+!frappe_docker/
+frappe_docker/compose.override.yml
+frappe_docker/compose.prod.yml

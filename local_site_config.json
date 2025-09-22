@@ -1,0 +1,8 @@
+{
+ "db_name": "adnoor_dev_local",
+ "db_password": "880aa9112",
+ "db_type": "mariadb",
+ "encryption_key": "local-encryption-key-for-development",
+ "maintenance_mode": 0,
+ "server_script_enabled": 1
+}
