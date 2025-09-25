@@ -1,11 +1,65 @@
 # AdNoor ERP Implementation Plan
 
+## 30-Day Trial Plan (Client-Facing)
+
+### Executive Summary
+- We will stand up a secure, fully controlled ERPNext stack owned by AdNoor, mirror production’s working pieces, and deliver mandatory core modules in 30 days with weekly demos and clear acceptance criteria. If the trial passes, we continue into Phases 2–7.
+
+### Goals (Trial)
+- Recreate a clean, controllable ERPNext under AdNoor’s Git + Docker.
+- Prove end-to-end core flows: Buy → Stock → Sell → Invoice/Payment → GL.
+- Establish security, backups, and dev → staging → prod workflow.
+
+### In-Scope Modules (Mandatory)
+- Sales: Quotations, Sales Orders
+- Buying: Purchase Orders
+- Accounting: Sales/Purchase Invoices, Payments, Journal Entries, GL
+- Master Data: Items, Customers, Suppliers, Warehouses, basic Price Lists
+- Inventory: Stock ledger/balance, Receipts/Issues, simple Reorder levels
+- People & Access: Roles/permissions
+- Reporting: Starter Ops Dashboard + key reports (Sales, Purchase, Stock, AR/AP, P&L)
+
+### Out of Scope (Deferred to Roadmap)
+- Custom workflows/dashboards, telephony, supplier portal, logistics integrations, mobile apps, POS, advanced pricing/commission logic.
+
+### Deliverables (Within 30 Days)
+- Environments & Ownership: Dockerized bench; versioned repo; infra scripts; staging that mirrors prod data; prod on Contabo; one-command backup & documented restore.
+- Configuration & Data: Templates + initial imports for Items, Customers, Suppliers, Warehouses, basic Price Lists; optional opening stock; COA/tax templates/payment modes validated.
+- Core Transactions: Quote→SO→Delivery Note/Invoice; PO→GRN/Bill; stock movement reflects in ledgers; GL postings verified.
+- Security & Ops: Roles/permissions; SSL/reverse proxy (prod); daily encrypted backups; scheduled verification restore; health checks and log rotation; email muted in non-prod.
+- Reporting: One Ops Dashboard with tiles: Orders today, Pending PO Receipts, Stock below reorder, AR aging, AP aging, Sales this month vs LY.
+- Docs & Handover: Runbook (start/stop/backup/restore/deploy), config workbook, short loom videos, UAT scripts + sign-off checklist.
+
+### Acceptance Criteria (Go/No-Go)
+- 100% of mandatory flows executed in UAT without blocking issues.
+- 0 unresolved P1 defects; ≤3 minor defects with workarounds.
+- Sample parity checks (10 SOs, 10 POs, 10 invoices) match expected ledgers.
+- Daily backups verified by an actual restore to staging.
+- AdNoor admin has full control (Git, credentials, bench, DB) — no vendor lock-in.
+
+### 30-Day Schedule
+- Week 1 – Foundations: Repo + Docker finalized; staging live; restore prod backup to staging; security hardening; mute emails in non-prod; roles/permissions draft; confirm COA/tax templates.
+- Week 2 – Masters & Config: Import master data; configure Buying/Selling/Stock settings; basic reorders; build starter Ops Dashboard.
+- Week 3 – Transactions & GL: Sales flow and Buying flow with test data; validate stock & GL postings; remediate gaps.
+- Week 4 – UAT & Hardening: UAT runs; fix/retune; backup/restore drill; finalize runbook & quick-start; Go/No-Go review and Phase-2 backlog grooming.
+
+### Cadence
+- Stand-up 3×/week (15 min), weekly demo (45–60 min), UAT sign-off end of Week 4.
+
+### Dependencies (Day 1)
+- SSH to Contabo (backup/restore), trial users + roles, tax templates/price rules/special posting rules, and sample data extracts (if full prod data not used).
+
 ## Project Overview
 - **Production**: https://adnoorerp.com (Contabo VM)
 - **Development**: http://localhost:8080 (Laptop)
 - **Repository**: adnoor-erp
 - **Framework**: Frappe Framework + ERPNext v15.79.0
-- **Setup Method**: Frappe Bench easy install script
+- **Setup Method**: Local dev via easy install; Staging/Prod via Docker Compose (frappe_docker)
+
+### Environments
+- **Development (Local)**: `adnoor-dev.local` (emails muted; developer mode enabled)
+- **Staging**: Dockerized bench mirroring production data (emails muted; developer mode enabled)
+- **Production**: Contabo VM with SSL/reverse proxy, backups, monitoring
 
 ## Current Status
 
@@ -21,9 +75,6 @@
 - [x] **Configuration files created**
 
 ### 🔄 In Progress
-- [x] **Access and verify ERPNext instance**
-- [x] **Complete setup wizard**
-- [x] **Restore production data from Contabo backups**
 - [ ] Custom app creation (adnoor_custom)
 - [ ] Initial ERPNext configuration and testing
 - [ ] User roles and permissions setup
@@ -148,6 +199,7 @@
   - [ ] Executive dashboard
   - [ ] Department dashboards
   - [ ] KPI tracking
+  - [ ] Operations Dashboard tiles: Orders today, Pending PO Receipts, Stock below reorder, AR aging, AP aging, Sales MTD vs LY
 
 ## Phase 3: Delivery & Logistics Integration (3-4 Weeks)
 - [ ] **Delivery/Dispatch Module**
@@ -192,6 +244,7 @@
 - [ ] **Database access** for advanced users
 - [ ] **Backup and recovery** procedures
 - [ ] **Documentation** for all customizations
+ - [ ] **All IP owned by AdNoor** (source code, configs, infra scripts in AdNoor Git)
 
 ### 8.2 Production Environment Setup
 - [ ] **Contabo VM optimization**
@@ -215,6 +268,12 @@
 3. **Validation**: Verify deployment success
 4. **Monitoring**: Monitor system performance
 5. **Backup**: Ensure backups are working
+
+### Backups & Restore (Operations)
+- Daily encrypted backups scheduled in production
+- Use `scripts/backup.sh` for backups and `scripts/restore.sh` for restores
+- Monthly verification restore drill to staging (pass/fail recorded)
+- Log rotation and basic health checks configured
 
 ## Technical Architecture
 
@@ -389,9 +448,7 @@ When defects are found, capture: module, doctype, record link, expected vs actua
 ### Development Environment
 - **URL**: https://adnoor-dev.local
 - **Admin Username**: Administrator
-- **Admin Password**: Admin@1234 (reset from original)
-- **MariaDB Root Password**: 880aa9112
-- **Passwords File**: /Users/adeemadilkhatri/frappe-passwords.txt
+- **Credentials**: Stored in secure secrets manager (.env/1Password/Bitwarden); not in docs or repo
 - **Note**: Add `127.0.0.1 adnoor-dev.local` to `/etc/hosts` for proper access
 
 ## Next Steps
