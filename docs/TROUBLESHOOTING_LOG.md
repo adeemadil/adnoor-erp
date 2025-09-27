@@ -193,6 +193,37 @@ docker exec adnoor-dev-frappe-1 bash -c "cd /workspace/development/frappe-bench 
 
 ---
 
+### 9. **Domain Access Without Port (Development Environment)**
+**Issue**: Cannot access site at `https://adnoor-dev.local/` without port number.
+
+**Root Cause**: The `easy-install.py` development setup only exposes ports 8000-8005, not port 80.
+
+**Resolution**: Use the correct development URL:
+- **Working URL**: `http://adnoor-dev.local:8000/` or `https://adnoor-dev.local:8000/`
+- **Note**: For production deployment, proper nginx configuration with port 80/443 would be needed.
+
+---
+
+### 10. **Branding Updates After Production Data Restoration**
+**Issue**: GhausERP branding still appears after updating Website Settings.
+
+**Root Cause**: Some branding elements are cached or stored in different locations.
+
+**Resolution**:
+```bash
+# Update site configuration
+bench --site sitename set-config app_name 'AdNoor ERP'
+bench --site sitename set-config title_prefix 'AdNoor ERP'
+bench --site sitename set-config favicon '/files/adnoor_website_logo_250w.png'
+
+# Clear cache after changes
+bench --site sitename clear-cache
+```
+
+**Note**: Some branding changes require manual updates through Website Settings in the ERPNext UI.
+
+---
+
 ## 📝 Notes for Future Deployments
 
 - **Always drop and recreate site** when restoring production data
