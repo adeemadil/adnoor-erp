@@ -222,6 +222,38 @@ bench --site sitename clear-cache
 
 **Note**: Some branding changes require manual updates through Website Settings in the ERPNext UI.
 
+**Favicon Issues**: If old favicon files cause 500 errors, upload new favicon through Website Settings > Brand section and ensure it's set as public.
+
+---
+
+### 11. **Docker Desktop Restart - Local Environment Recovery**
+**Issue**: Local environment becomes inaccessible after Docker Desktop closes or restarts.
+
+**Symptoms**:
+- `ERR_CONNECTION_REFUSED` or `502 Bad Gateway` errors
+- `adnoor-dev.local` not accessible
+- Containers may be running but Frappe server not started
+
+**Root Cause**: When Docker Desktop restarts, containers restart but the Frappe development server inside the container doesn't automatically restart.
+
+**Resolution**:
+```bash
+# 1. Check container status
+docker ps -a
+
+# 2. If containers are running but site not accessible, restart Frappe server
+docker exec -d adnoor-dev-frappe-1 bash -c "cd /workspace/development/frappe-bench && bench serve --port 8000 --host 0.0.0.0"
+
+# 3. Wait 30 seconds and test
+curl -I http://adnoor-dev.local
+```
+
+**Verification**: Should return `HTTP/1.1 200 OK` with login page content.
+
+**Prevention**: Consider using `docker-compose restart` instead of individual container restarts to ensure all services start properly.
+
+**Time to Recovery**: ~3-4 minutes (2-3 minutes for container startup + 30 seconds for Frappe server startup)
+
 ---
 
 ## 📝 Notes for Future Deployments
