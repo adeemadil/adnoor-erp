@@ -662,6 +662,9 @@ def add_develop_parser(subparsers: argparse.ArgumentParser):
     parser.add_argument(
         "-n", "--project", default="frappe", help="Compose project name"
     )
+    parser.add_argument(
+        "--force-pull", action="store_true", help="Force pull frappe_docker"
+    )
 
 
 def add_upgrade_parser(subparsers: argparse.ArgumentParser):
