@@ -68,12 +68,22 @@ This document provides the step-by-step procedure for deploying AdNoor ERP to st
    bench new-site staging.adnoorerp.com --admin-password Admin@1234 --mariadb-root-password 123 --mariadb-root-username root --db-host mariadb
    ```
 
-2. **Install ERPNext**:
+2. **Download ERPNext**:
+   ```bash
+   bench get-app erpnext --branch version-15
+   ```
+
+3. **Download HRMS**:
+   ```bash
+   bench get-app hrms --branch version-15
+   ```
+
+4. **Install ERPNext**:
    ```bash
    bench --site staging.adnoorerp.com install-app erpnext
    ```
 
-3. **Install HRMS**:
+5. **Install HRMS**:
    ```bash
    bench --site staging.adnoorerp.com install-app hrms
    ```
