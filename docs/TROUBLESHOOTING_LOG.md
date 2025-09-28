@@ -267,5 +267,37 @@ curl -I http://adnoor-dev.local
 
 ---
 
-*Last Updated: $(date)*
-*Version: 1.0*
+### 12. **Database User Permission Issues After Docker Restart - Local Environment**
+**Issue**: `MySQLdb.OperationalError: (1045, "Access denied for user '_dccaadb03538e418'@'172.18.0.2' (using password: YES)")` when accessing local site after Docker restart.
+
+**Root Cause**: The site's database user password in MariaDB doesn't match the password stored in the site configuration file.
+
+**Symptoms**:
+- Site shows 500 Internal Server Error
+- Database connection errors in logs
+- Site accessible via direct port but not through Nginx proxy
+
+**Resolution**:
+```bash
+# 1. Check the site configuration to find the correct password
+docker exec adnoor-dev-frappe-1 bash -c "cd /workspace/development/frappe-bench && cat sites/adnoor-dev.local/site_config.json"
+
+# 2. Update the database user password to match site config
+docker exec adnoor-dev-mariadb-1 mysql -u root -p123 -e "ALTER USER '_dccaadb03538e418'@'%' IDENTIFIED BY 'G6bAc7Nt0aEx8kzt';"
+docker exec adnoor-dev-mariadb-1 mysql -u root -p123 -e "ALTER USER '_dccaadb03538e418'@'localhost' IDENTIFIED BY 'G6bAc7Nt0aEx8kzt';"
+docker exec adnoor-dev-mariadb-1 mysql -u root -p123 -e "FLUSH PRIVILEGES;"
+
+# 3. Test site accessibility
+curl -I http://adnoor-dev.local
+```
+
+**Prevention**: Always verify database user passwords match between site configuration and MariaDB user accounts after any database operations.
+
+**Verification**: Should return `HTTP/1.1 200 OK` with proper site content.
+
+**Time to Recovery**: ~2-3 minutes (including troubleshooting time)
+
+---
+
+*Last Updated: September 28, 2025*
+*Version: 1.1*

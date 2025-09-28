@@ -8,26 +8,15 @@ services:
       - --skip-character-set-client-handshake
       - --skip-innodb-read-only-compressed # Temporary fix for MariaDB 10.6
     environment:
-      MYSQL_ROOT_PASSWORD: staging_secure_password_2024
+      MYSQL_ROOT_PASSWORD: 123
     volumes:
       - mariadb-data:/var/lib/mysql
-    ports:
-      - "3306:3306"
 
   redis-cache:
     image: docker.io/redis:alpine
-    ports:
-      - "6379:6379"
 
   redis-queue:
     image: docker.io/redis:alpine
-    ports:
-      - "6380:6379"
-
-  redis-socketio:
-    image: docker.io/redis:alpine
-    ports:
-      - "6381:6379"
 
   frappe:
     image: docker.io/frappe/bench:latest
@@ -35,17 +24,14 @@ services:
     environment:
       - SHELL=/bin/bash
     volumes:
-      - ./frappe_docker:/workspace:cached
-      - ./backups:/backups:cached
-    working_dir: /workspace/development
+      # Bind mount the entire frappe-bench directory from host to container
+      - /Users/adeemadilkhatri/adnoor-erp/frappe-bench:/workspace/development/frappe-bench
+      # Mount the repo for development
+      - ..:/workspace:cached
+    working_dir: /workspace/development/frappe-bench
     ports:
-      - "8000-8005:8000-8005"
-      - "9000-9005:9000-9005"
-    depends_on:
-      - mariadb
-      - redis-cache
-      - redis-queue
-      - redis-socketio
+      - 8000-8005:8000-8005
+      - 9000-9005:9000-9005
 
 volumes:
   mariadb-data:

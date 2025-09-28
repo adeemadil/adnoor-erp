@@ -28,6 +28,18 @@ This document provides the step-by-step procedure for deploying AdNoor ERP to st
 
 **Key Points:**
 - All `bench` commands are executed **inside the Docker container**
+
+## 💾 Data Persistence Strategy
+
+**Important**: The staging setup uses **bind mounts** to prevent data loss:
+
+- **frappe-bench directory** is stored on VM host: `/home/as_techsolutions_sales/adnoor-erp/frappe-bench`
+- **Container restart** won't lose data (same as local setup)
+- **Container recreation** won't lose data
+- **VM restart** won't lose data
+- **Recovery time**: ~30 seconds (just run `bench start`)
+
+This ensures the same reliability as your local setup.
 - All `docker`, `nginx`, `certbot` commands are executed **on the VM host**
 - The MariaDB password is `123` (not `admin123` or `frappe`)
 - Database host is `mariadb` (Docker service name)
@@ -88,20 +100,41 @@ This document provides the step-by-step procedure for deploying AdNoor ERP to st
    bench --site staging.adnoorerp.com install-app hrms
    ```
 
-### Step 3: Restore Production Data
+### Step 3: Get Latest Production Backups
 
-1. **Copy production backups to VM** (from local machine):
+1. **Connect to Production VM** (if needed):
    ```bash
-   scp backups/latest_production_database.sql.gz as_techsolutions_sales@34.60.234.74:/home/as_techsolutions_sales/adnoor-erp/backups/
-   scp backups/latest_production_files.tar.gz as_techsolutions_sales@34.60.234.74:/home/as_techsolutions_sales/adnoor-erp/backups/
+   # SSH into production server (Contabo)
+   ssh username@your-production-server-ip
    ```
 
-2. **Restore database** (inside Docker container):
+2. **Create fresh production backup** (if needed):
+   ```bash
+   # On production server
+   cd /path/to/production/frappe-bench
+   bench --site www.adnoorerp.com backup --with-files
+   # This creates: www.adnoorerp.com-database.sql.gz and www.adnoorerp.com-files.tar
+   ```
+
+3. **Copy production backups to staging VM**:
+   ```bash
+   # From your local machine (assuming backups are in local backups/ folder)
+   scp backups/latest_production_database.sql.gz as_techsolutions_sales@34.60.234.74:/home/as_techsolutions_sales/adnoor-erp/backups/
+   scp backups/latest_production_files.tar.gz as_techsolutions_sales@34.60.234.74:/home/as_techsolutions_sales/adnoor-erp/backups/
+   
+   # OR copy directly from production to staging
+   scp username@production-ip:/path/to/backup/www.adnoorerp.com-database.sql.gz as_techsolutions_sales@34.60.234.74:/home/as_techsolutions_sales/adnoor-erp/backups/latest_production_database.sql.gz
+   scp username@production-ip:/path/to/backup/www.adnoorerp.com-files.tar as_techsolutions_sales@34.60.234.74:/home/as_techsolutions_sales/adnoor-erp/backups/latest_production_files.tar.gz
+   ```
+
+### Step 4: Restore Production Data
+
+1. **Restore database** (inside Docker container):
    ```bash
    bench --site staging.adnoorerp.com restore /home/as_techsolutions_sales/adnoor-erp/backups/latest_production_database.sql.gz --with-public-files /home/as_techsolutions_sales/adnoor-erp/backups/latest_production_files.tar.gz --mariadb-root-password 123
    ```
 
-### Step 4: Configure Site
+### Step 5: Configure Site
 
 1. **Update site configuration**:
    ```bash
@@ -120,7 +153,7 @@ This document provides the step-by-step procedure for deploying AdNoor ERP to st
    bench --site staging.adnoorerp.com clear-cache
    ```
 
-### Step 5: Start Services
+### Step 6: Start Services
 
 1. **Start bench services** (inside Docker container):
    ```bash
@@ -161,7 +194,7 @@ This document provides the step-by-step procedure for deploying AdNoor ERP to st
    sudo systemctl reload nginx
    ```
 
-### Step 6: SSL Configuration
+### Step 7: SSL Configuration
 
 1. **Install SSL certificate**:
    ```bash
@@ -209,7 +242,7 @@ docker ps
 ```bash
 # On VM host
 docker ps
-docker-compose up -d
+docker compose up -d
 ```
 
 **3. Database Connection Issues (inside container)**
@@ -256,9 +289,42 @@ Once staging is validated, use this same procedure for production deployment wit
 ## 📝 Notes
 
 - This procedure mirrors the successful local setup approach
-- Uses Frappe Bench directly (no Docker complications)
+- Uses Docker-based Frappe Bench with consistent bind mounts (same as local development)
 - Follows the same pattern that worked for `adnoor-dev.local`
 - Architecture compatibility: AMD64 for both staging and production VMs
+- **Data Persistence**: Both local and staging use bind mounts to host directories for data persistence
+
+## 🔧 Local Development Setup (Consistent with Staging)
+
+To maintain consistency between local and staging environments:
+
+1. **Create local frappe-bench directory**:
+   ```bash
+   mkdir -p /Users/adeemadilkhatri/adnoor-erp/frappe-bench
+   ```
+
+2. **Copy existing data from container**:
+   ```bash
+   docker cp adnoor-dev-frappe-1:/workspace/development/frappe-bench/. /Users/adeemadilkhatri/adnoor-erp/frappe-bench/
+   ```
+
+3. **Use local-compose.yaml for consistent setup**:
+   ```bash
+   cd /Users/adeemadilkhatri/adnoor-erp/frappe_docker
+   docker compose -f ../local-compose.yaml up -d
+   ```
+
+This ensures both local and staging environments have the same data persistence strategy.
+
+## 🔧 Scripts Directory
+
+The `scripts/` directory contains automation scripts that haven't been verified yet:
+- `deploy-staging.sh` - Automated deployment script (not tested)
+- `cleanup-staging.sh` - Cleanup script for fresh deployments (not tested)
+- `restore-to-staging.sh` - Automated restore script (not tested)
+- `backup.sh` - Production backup script
+
+**Current approach**: Manual deployment using this procedure (recommended until scripts are verified)
 
 ---
 
