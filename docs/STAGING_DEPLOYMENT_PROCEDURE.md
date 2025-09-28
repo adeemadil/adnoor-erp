@@ -18,6 +18,20 @@ This document provides the step-by-step procedure for deploying AdNoor ERP to st
 - Production backups available
 - Domain configured (staging.adnoorerp.com)
 
+## 🔄 Workflow Overview
+
+**The deployment follows this pattern:**
+1. **SSH into VM** → Access the staging server
+2. **Enter Docker container** → Access the Frappe environment  
+3. **Use Bench commands** → Create site, install apps, restore data
+4. **Exit container** → Return to VM host for Nginx/SSL setup
+
+**Key Points:**
+- All `bench` commands are executed **inside the Docker container**
+- All `docker`, `nginx`, `certbot` commands are executed **on the VM host**
+- The MariaDB password is `123` (not `admin123` or `frappe`)
+- Database host is `mariadb` (Docker service name)
+
 ## 🚀 Deployment Steps
 
 ### Step 1: Server Preparation
@@ -27,149 +41,57 @@ This document provides the step-by-step procedure for deploying AdNoor ERP to st
    ssh -o StrictHostKeyChecking=no as_techsolutions_sales@34.60.234.74
    ```
 
-2. **Update system packages**:
+2. **Check Docker containers are running**:
    ```bash
-   sudo apt update && sudo apt upgrade -y
+   docker ps
+   # Should show: frappe, mariadb, redis containers
    ```
 
-3. **Install required dependencies**:
+3. **Access the Frappe Docker container**:
    ```bash
-   # Install pip for user (if sudo not available)
-   curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
-   python3 get-pip.py --user
-   
-   # Add to PATH
-   echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
-   source ~/.bashrc
+   docker exec -it adnoor-staging-frappe-1 bash
+   # You should now be inside the container
    ```
 
-### Step 2: Repository Setup
-
-1. **Upload repository to staging server**:
+4. **Navigate to the Frappe Bench directory**:
    ```bash
-   # From local machine
-   scp -r . as_techsolutions_sales@34.60.234.74:/home/as_techsolutions_sales/adnoor-erp/
+   cd /home/frappe/frappe-bench
+   # or /workspace/development/frappe-bench
    ```
 
-2. **Verify repository structure**:
+### Step 2: Create Staging Site
+
+**⚠️ IMPORTANT**: You are now inside the Docker container. All commands below are executed within the container.
+
+1. **Create site with correct database host**:
    ```bash
-   # On staging server
-   ls -la /home/as_techsolutions_sales/adnoor-erp/
-   # Should show: config/, docs/, scripts/, backups/, frappe_docker/, etc.
-   ```
-
-### Step 3: Frappe Bench Installation
-
-1. **Install Frappe Bench**:
-   ```bash
-   cd /home/as_techsolutions_sales/adnoor-erp/frappe_docker/development
-   python3 -m pip install --user frappe-bench
-   ```
-
-2. **Add to PATH**:
-   ```bash
-   echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
-   source ~/.bashrc
-   ```
-
-3. **Verify bench installation**:
-   ```bash
-   bench --version
-   ```
-
-### Step 4: Create Frappe Bench
-
-1. **Initialize bench**:
-   ```bash
-   cd /home/as_techsolutions_sales/adnoor-erp/frappe_docker/development
-   bench init frappe-bench --python python3
-   ```
-
-2. **Navigate to bench directory**:
-   ```bash
-   cd frappe-bench
-   ```
-
-3. **Configure bench**:
-   ```bash
-   bench set-config db_host localhost
-   bench set-config redis_cache redis://localhost:13000
-   bench set-config redis_queue redis://localhost:11000
-   bench set-config redis_socketio redis://localhost:12000
-   ```
-
-### Step 5: Install Dependencies
-
-1. **Install MariaDB**:
-   ```bash
-   sudo apt install -y mariadb-server mariadb-client
-   sudo systemctl start mariadb
-   sudo systemctl enable mariadb
-   sudo mysql_secure_installation
-   ```
-
-2. **Install Redis**:
-   ```bash
-   sudo apt install -y redis-server
-   sudo systemctl start redis-server
-   sudo systemctl enable redis-server
-   ```
-
-3. **Configure MariaDB**:
-   ```bash
-   sudo mysql -u root -p
-   # In MySQL prompt:
-   CREATE USER 'frappe'@'localhost' IDENTIFIED BY 'frappe';
-   GRANT ALL PRIVILEGES ON *.* TO 'frappe'@'localhost';
-   FLUSH PRIVILEGES;
-   EXIT;
-   ```
-
-### Step 6: Create Staging Site
-
-1. **Create site**:
-   ```bash
-   cd /home/as_techsolutions_sales/adnoor-erp/frappe_docker/development/frappe-bench
-   bench new-site staging.adnoorerp.com --admin-password Admin@1234 --db-root-password frappe
+   bench new-site staging.adnoorerp.com --admin-password Admin@1234 --mariadb-root-password 123 --mariadb-root-username root --db-host mariadb
    ```
 
 2. **Install ERPNext**:
    ```bash
-   bench get-app erpnext --branch version-15
    bench --site staging.adnoorerp.com install-app erpnext
    ```
 
 3. **Install HRMS**:
    ```bash
-   bench get-app hrms --branch version-15
    bench --site staging.adnoorerp.com install-app hrms
    ```
 
-### Step 7: Restore Production Data
+### Step 3: Restore Production Data
 
-1. **Copy production backups**:
+1. **Copy production backups to VM** (from local machine):
    ```bash
-   # From local machine
    scp backups/latest_production_database.sql.gz as_techsolutions_sales@34.60.234.74:/home/as_techsolutions_sales/adnoor-erp/backups/
    scp backups/latest_production_files.tar.gz as_techsolutions_sales@34.60.234.74:/home/as_techsolutions_sales/adnoor-erp/backups/
    ```
 
-2. **Drop existing site and recreate**:
+2. **Restore database** (inside Docker container):
    ```bash
-   # On staging server
-   cd /home/as_techsolutions_sales/adnoor-erp/frappe_docker/development/frappe-bench
-   bench drop-site staging.adnoorerp.com --force --db-root-password frappe
-   bench new-site staging.adnoorerp.com --admin-password Admin@1234 --db-root-password frappe
-   bench --site staging.adnoorerp.com install-app erpnext
-   bench --site staging.adnoorerp.com install-app hrms
+   bench --site staging.adnoorerp.com restore /home/as_techsolutions_sales/adnoor-erp/backups/latest_production_database.sql.gz --with-public-files /home/as_techsolutions_sales/adnoor-erp/backups/latest_production_files.tar.gz --mariadb-root-password 123
    ```
 
-3. **Restore database**:
-   ```bash
-   bench --site staging.adnoorerp.com restore /home/as_techsolutions_sales/adnoor-erp/backups/latest_production_database.sql.gz --with-public-files /home/as_techsolutions_sales/adnoor-erp/backups/latest_production_files.tar.gz --db-root-password frappe
-   ```
-
-### Step 8: Configure Site
+### Step 4: Configure Site
 
 1. **Update site configuration**:
    ```bash
@@ -188,14 +110,20 @@ This document provides the step-by-step procedure for deploying AdNoor ERP to st
    bench --site staging.adnoorerp.com clear-cache
    ```
 
-### Step 9: Start Services
+### Step 5: Start Services
 
-1. **Start bench services**:
+1. **Start bench services** (inside Docker container):
    ```bash
    bench start
    ```
 
-2. **Configure Nginx**:
+2. **Exit Docker container**:
+   ```bash
+   exit
+   # You're now back on the VM host
+   ```
+
+3. **Configure Nginx on VM host**:
    ```bash
    sudo nano /etc/nginx/sites-available/staging.adnoorerp.com
    ```
@@ -216,14 +144,14 @@ This document provides the step-by-step procedure for deploying AdNoor ERP to st
    }
    ```
 
-3. **Enable site**:
+4. **Enable site**:
    ```bash
    sudo ln -s /etc/nginx/sites-available/staging.adnoorerp.com /etc/nginx/sites-enabled/
    sudo nginx -t
    sudo systemctl reload nginx
    ```
 
-### Step 10: SSL Configuration
+### Step 6: SSL Configuration
 
 1. **Install SSL certificate**:
    ```bash
@@ -259,33 +187,41 @@ This document provides the step-by-step procedure for deploying AdNoor ERP to st
 
 ### Common Issues
 
-**1. Bench Command Not Found**
+**1. Docker Permission Denied**
 ```bash
-export PATH="$HOME/.local/bin:$PATH"
-source ~/.bashrc
+# On VM host
+sudo usermod -aG docker $USER
+newgrp docker
+docker ps
 ```
 
-**2. Database Connection Issues**
+**2. Container Not Running**
 ```bash
-sudo systemctl status mariadb
-sudo systemctl start mariadb
+# On VM host
+docker ps
+docker-compose up -d
 ```
 
-**3. Redis Connection Issues**
+**3. Database Connection Issues (inside container)**
 ```bash
-sudo systemctl status redis-server
-sudo systemctl start redis-server
+# Check if mariadb container is accessible
+ping mariadb
+# Verify password
+docker exec adnoor-staging-mariadb-1 mysql -u root -p123 -e "SHOW DATABASES;"
 ```
 
-**4. Site Not Accessible**
+**4. Site Creation Fails**
 ```bash
+# Inside Docker container
 bench --site staging.adnoorerp.com doctor
 bench --site staging.adnoorerp.com clear-cache
 ```
 
-**5. Permission Issues**
+**5. Wrong Database Password**
 ```bash
-sudo chown -R as_techsolutions_sales:as_techsolutions_sales /home/as_techsolutions_sales/
+# Check the correct password in docker-compose.yml
+cat /home/as_techsolutions_sales/adnoor-erp/frappe_docker/devcontainer-example/docker-compose.yml | grep MYSQL_ROOT_PASSWORD
+# Should show: MYSQL_ROOT_PASSWORD=123
 ```
 
 ## 📊 Expected Results
